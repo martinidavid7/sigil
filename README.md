@@ -1,66 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIGIL · Public Procurement Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web application that helps Brazilian city halls organize the groundwork of their
+public procurement processes (*licitações*): the city hall itself, the requesting
+departments, the procurement modes with their value thresholds, and the sequence
+of steps every process goes through.
 
-## About Laravel
+> The user interface is in Brazilian Portuguese, as the system targets Brazilian municipalities.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+![Dashboard](docs/screenshots/painel.png)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **City hall:** one-time setup of the organization. The other modules unlock only after it is configured (`EnsureCityHallIsConfigured` middleware).
+- **Departments (*secretarias*):** CRUD with live search reflected in the URL (`?busca=`), pagination and delete confirmation.
+- **Procurement modes (*modalidades*):** value ranges for goods/services and for construction/engineering, typed in Brazilian currency format (`1.430.000,00`) and validated (the maximum cannot be lower than the minimum). Each mode has its own set of steps.
+- **Process steps (*etapas*):** the procurement workflow, with reordering, enable/disable and filtering by status.
+- **Dashboard:** summary counts, a "which mode applies?" table and the process flow.
+- Input masks for CNPJ (Brazilian company ID), ZIP code, landline/mobile phone and currency, localized validation messages and toast notifications after every action.
 
-## Learning Laravel
+| Procurement modes | Editing with currency mask | Validation |
+|---|---|---|
+| ![Procurement modes](docs/screenshots/modalidades.png) | ![Editing a mode](docs/screenshots/modalidade-edicao.png) | ![Validation](docs/screenshots/secretaria-validacao.png) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech stack
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.2+, Laravel 11 |
+| UI | Livewire 3 (full-page components and Form Objects), Alpine.js (input masks) |
+| Authentication | Laravel Jetstream (Fortify): login, registration, 2FA, profile |
+| Layout | SB Admin 2 (Bootstrap 4) |
+| Database | MySQL/MariaDB (tests run on in-memory SQLite) |
+| Tests | PHPUnit + `Livewire::test()` |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Architecture
 
-## Laravel Sponsors
+```
+app/
+├── Livewire/
+│   ├── Dashboard.php
+│   ├── CityHalls/Settings.php        # city hall (single-record form)
+│   ├── Secretaries/Index.php         # list + create/edit modal
+│   ├── BiddingModes/Index.php
+│   ├── BiddingSteps/Index.php
+│   ├── Forms/                        # Livewire Form Objects: state + validation + persistence
+│   └── Concerns/                     # HasFormModal, Notifies (toasts)
+├── Models/                           # CityHall, Secretary, BiddingMode, BiddingStep
+├── Http/Middleware/EnsureCityHallIsConfigured.php
+└── Support/Money.php                 # BRL ⇄ decimal conversion and range descriptions
+resources/views/
+├── layouts/admin.blade.php
+├── components/sigil/                 # input, modal, page-header, status-badge
+└── livewire/
+lang/pt_BR/                           # validation, auth and Jetstream translations
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Key design decisions:
 
-### Premium Partners
+- **Form Objects** (`app/Livewire/Forms`) hold validation rules, localized field names and persistence, so components only deal with UI interaction.
+- **Many-to-many relationship** between modes and steps (`bidding_mode_step` pivot table) instead of a JSON list of IDs, which gives referential integrity and allows `withCount`.
+- **Monetary values** are stored as `decimal(15,2)`. The UI works with Brazilian-formatted strings, and the conversion is isolated in `App\Support\Money`, which has its own unit tests.
+- **Server-driven modal:** the `<x-sigil.modal>` component is rendered by Livewire from `$showModal`, with no dependency on Bootstrap's JavaScript.
+- **Reference data in idempotent seeders** (`updateOrCreate`): the 13 default steps and the 6 procurement modes, using the thresholds set by Decree 9.412/2018.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Getting started
 
-## Contributing
+Requirements: PHP 8.2+, Composer, Node 18+ and MySQL/MariaDB.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+git clone <repository-url> sigil && cd sigil
+composer install
+npm install && npm run build      # assets for the login/profile pages (Jetstream)
 
-## Code of Conduct
+cp .env.example .env
+php artisan key:generate
+# set DB_DATABASE / DB_USERNAME / DB_PASSWORD in .env and create the database
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+php artisan migrate --seed
+php artisan serve
+```
 
-## Security Vulnerabilities
+Open `http://localhost:8000` and sign in with the demo user, created by `DemoSeeder` when `APP_ENV=local`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Email:** `demo@sigil.test`
+- **Password:** `password`
 
-## License
+## Tests
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan test
+```
+
+The suite runs on in-memory SQLite (configured in `phpunit.xml`), so it never touches the development database. It covers the Livewire components (create, edit, validation, search, reordering, enable/disable and delete), the access middleware, the dashboard and the currency conversion.
+
+## Roadmap
+
+- **Procurement processes** module: opening a process per department, choosing the mode automatically from the estimated value, and tracking each step.
+- Compliance with **Law 14.133/2021** (Brazil's new Public Procurement Law), which abolished the *Convite* and *Tomada de Preços* modes and introduced *Diálogo Competitivo*. The current modes follow the previous Law 8.666/93.
