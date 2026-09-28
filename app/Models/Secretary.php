@@ -2,23 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Secretary extends Model
 {
+    /** @use HasFactory<\Database\Factories\SecretaryFactory> */
+    use HasFactory;
 
-    
-    //por algum motivo, foi necessario informar o nome da tabela
-    protected $table = 'secretarys';
-   
-    protected $fillable = ['secretary', 
-                            'responsible_name', 
-                            'address', 
-                            'phone', 
-                            'neighborhood', 
-                            'number', 
-                            'zip_code', 
-                            '_token', 
-                            '_method'];
-                            
+    protected $fillable = [
+        'name',
+        'responsible_name',
+        'phone',
+        'address',
+        'number',
+        'neighborhood',
+        'zip_code',
+    ];
 }
