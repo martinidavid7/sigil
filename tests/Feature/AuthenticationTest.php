@@ -14,7 +14,19 @@ class AuthenticationTest extends TestCase
     {
         $response = $this->get('/login');
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertSee('Bem-vindo(a)!')
+            ->assertDontSee('Ambiente de demonstração');
+    }
+
+    public function test_login_screen_shows_demo_credentials_when_enabled(): void
+    {
+        config(['sigil.demo.enabled' => true]);
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Ambiente de demonstração')
+            ->assertSee('demo@sigil.test');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
