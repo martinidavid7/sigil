@@ -9,6 +9,16 @@ of steps every process goes through.
 
 ![Dashboard](docs/screenshots/painel.png)
 
+## Live demo
+
+A demo instance is available at **https://sigil.martinisoftware.com.br**, so the application can be evaluated without a local install.
+
+| Email | Password |
+|---|---|
+| `demo@sigil.test` | `password` |
+
+This is a shared demo environment: data may be changed by other visitors and can be reset at any time. Please don't enter real or sensitive information.
+
 ## Features
 
 - **City hall:** one-time setup of the organization. The other modules unlock only after it is configured (`EnsureCityHallIsConfigured` middleware).
