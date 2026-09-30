@@ -1,9 +1,9 @@
 # SIGIL · Public Procurement Management System
 
-A web application that helps Brazilian city halls organize the groundwork of their
-public procurement processes (*licitações*): the city hall itself, the requesting
-departments, the procurement modes with their value thresholds, and the sequence
-of steps every process goes through.
+A web application that helps Brazilian city halls run their public procurement
+processes (*licitações*): the city hall itself, the requesting departments and
+their staff, the procurement modes with their value thresholds, the sequence of
+steps every process goes through, and the tracking of each process step by step.
 
 > The user interface is in Brazilian Portuguese, as the system targets Brazilian municipalities.
 
@@ -23,9 +23,11 @@ This is a shared demo environment: data may be changed by other visitors and can
 
 - **City hall:** one-time setup of the organization. The other modules unlock only after it is configured (`EnsureCityHallIsConfigured` middleware).
 - **Departments (*secretarias*):** CRUD with live search reflected in the URL (`?busca=`), pagination and delete confirmation.
-- **Procurement modes (*modalidades*):** value ranges for goods/services and for construction/engineering, typed in Brazilian currency format (`1.430.000,00`) and validated (the maximum cannot be lower than the minimum). Each mode has its own set of steps.
-- **Process steps (*etapas*):** the procurement workflow, with reordering, enable/disable and filtering by status.
-- **Dashboard:** summary counts, a "which mode applies?" table and the process flow.
+- **Staff (*profissionais*):** the people in each department who can be responsible for a step, filterable by department.
+- **Procurement modes (*modalidades*):** value ranges for goods/services and for construction/engineering, typed in Brazilian currency format (`1.430.000,00`) and validated (the maximum cannot be lower than the minimum).
+- **Process steps (*etapas*):** the procurement workflow shared by every mode, with reordering, enable/disable and filtering by status.
+- **Procurement processes (*licitações*):** opening a process (number/year, subject, type, estimated value and mode, with a mode suggestion based on the value ranges) starts it on the first active step. Each step records its start and completion dates, responsible department and staff member, page number and notes. Completing a step requires naming the department and staff member for the next one, which then starts automatically. Any started step can be edited (a step's completion date is also the next step's start date, so they move together), and the last completed step can be reopened to fix mistakes.
+- **Dashboard:** summary counts, a "which mode applies?" table and the process flow with how many processes are currently on each step.
 - Input masks for CNPJ (Brazilian company ID), ZIP code, landline/mobile phone and currency, localized validation messages and toast notifications after every action.
 
 | Procurement modes | Editing with currency mask | Validation |
@@ -51,16 +53,20 @@ app/
 │   ├── Dashboard.php
 │   ├── CityHalls/Settings.php        # city hall (single-record form)
 │   ├── Secretaries/Index.php         # list + create/edit modal
+│   ├── Professionals/Index.php
 │   ├── BiddingModes/Index.php
 │   ├── BiddingSteps/Index.php
+│   ├── Biddings/Index.php            # process list + opening a new process
+│   ├── Biddings/Show.php             # step-by-step tracking: complete, reopen, edit
 │   ├── Forms/                        # Livewire Form Objects: state + validation + persistence
-│   └── Concerns/                     # HasFormModal, Notifies (toasts)
-├── Models/                           # CityHall, Secretary, BiddingMode, BiddingStep
+│   └── Concerns/                     # HasFormModal, Notifies (toasts), ChoosesResponsible, SuggestsBiddingMode
+├── Models/                           # CityHall, Secretary, Professional, BiddingMode, BiddingStep, Bidding, BiddingStage
+├── Enums/BiddingType.php             # goods/services or construction/engineering
 ├── Http/Middleware/EnsureCityHallIsConfigured.php
 └── Support/Money.php                 # BRL ⇄ decimal conversion and range descriptions
 resources/views/
 ├── layouts/admin.blade.php
-├── components/sigil/                 # input, modal, page-header, status-badge
+├── components/sigil/                 # input, select, modal, page-header, status-badge
 └── livewire/
 lang/pt_BR/                           # validation, auth and Jetstream translations
 ```
@@ -68,7 +74,8 @@ lang/pt_BR/                           # validation, auth and Jetstream translati
 Key design decisions:
 
 - **Form Objects** (`app/Livewire/Forms`) hold validation rules, localized field names and persistence, so components only deal with UI interaction.
-- **Many-to-many relationship** between modes and steps (`bidding_mode_step` pivot table) instead of a JSON list of IDs, which gives referential integrity and allows `withCount`.
+- **Steps are resolved lazily.** A process stores only the steps it has already started (`bidding_stages`). The next step is looked up in the step register when the current one is completed: the first active step positioned after the current one that the process hasn't been through yet. Changes to the register (disabling, adding or reordering steps) therefore apply to processes already under way, while their history stays intact. The workflow lives in the `Bidding` model (`begin`, `completeCurrentStage`, `reopenLastStage`, `pendingSteps`).
+- **Records in use are protected:** modes, departments and staff referenced by a process can't be deleted (foreign keys with `restrict`, plus a friendly message in the UI). Steps are disabled, never deleted.
 - **Monetary values** are stored as `decimal(15,2)`. The UI works with Brazilian-formatted strings, and the conversion is isolated in `App\Support\Money`, which has its own unit tests.
 - **Server-driven modal:** the `<x-sigil.modal>` component is rendered by Livewire from `$showModal`, with no dependency on Bootstrap's JavaScript.
 - **Reference data in idempotent seeders** (`updateOrCreate`): the 13 default steps and the 6 procurement modes, using the thresholds set by Decree 9.412/2018.

@@ -18,7 +18,7 @@
     @else
         <div class="row">
             @foreach ($stats as $stat)
-                <div class="col-md-4 mb-4">
+                <div class="col-md-6 col-xl-3 mb-4">
                     <a href="{{ route($stat['route']) }}" class="text-decoration-none">
                         <div class="card border-left-{{ $stat['color'] }} shadow h-100 py-2">
                             <div class="card-body">
@@ -85,6 +85,10 @@
                             <li class="list-group-item py-2 d-flex align-items-center" wire:key="dash-step-{{ $step->id }}">
                                 <span class="badge badge-pill badge-primary mr-2">{{ $loop->iteration }}</span>
                                 {{ $step->name }}
+                                @if ($total = $inProgressByStep[$step->id] ?? 0)
+                                    <a href="{{ route('biddings.index') }}" class="badge badge-warning ml-auto"
+                                        title="Licitações nesta etapa">{{ $total }}</a>
+                                @endif
                             </li>
                         @empty
                             <li class="list-group-item text-muted">Nenhuma etapa ativa.</li>

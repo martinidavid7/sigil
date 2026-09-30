@@ -61,9 +61,23 @@
                     </a>
                 </li>
 
+                <li class="nav-item {{ request()->routeIs('professionals.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('professionals.index') }}">
+                        <i class="fas fa-fw fa-user-tie"></i>
+                        <span>Profissionais</span>
+                    </a>
+                </li>
+
                 <hr class="sidebar-divider">
 
                 <div class="sidebar-heading">Licitações</div>
+
+                <li class="nav-item {{ request()->routeIs('biddings.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('biddings.index') }}">
+                        <i class="fas fa-fw fa-folder-open"></i>
+                        <span>Processos</span>
+                    </a>
+                </li>
 
                 <li class="nav-item {{ request()->routeIs('bidding-modes.*') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ route('bidding-modes.index') }}">

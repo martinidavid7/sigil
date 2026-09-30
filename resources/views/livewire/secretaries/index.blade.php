@@ -41,7 +41,7 @@
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                     wire:click="delete({{ $secretary->id }})"
-                                    wire:confirm="Excluir a {{ $secretary->name }}? Esta ação não pode ser desfeita.">
+                                    wire:confirm="Excluir a {{ $secretary->name }} e seus profissionais? Esta ação não pode ser desfeita.">
                                     <i class="fas fa-trash fa-sm"></i> Excluir
                                 </button>
                             </td>

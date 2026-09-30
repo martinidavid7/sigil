@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\BiddingMode;
-use App\Models\BiddingStep;
 use Illuminate\Database\Seeder;
 
 class BiddingModeSeeder extends Seeder
@@ -65,15 +64,11 @@ class BiddingModeSeeder extends Seeder
             ],
         ];
 
-        $stepIds = BiddingStep::enabled()->pluck('id');
-
         foreach ($modes as $data) {
-            $mode = BiddingMode::updateOrCreate(
+            BiddingMode::updateOrCreate(
                 ['name' => $data['name']],
                 $data + ['enabled' => true],
             );
-
-            $mode->steps()->syncWithoutDetaching($stepIds);
         }
     }
 }
