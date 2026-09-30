@@ -10,7 +10,3 @@ Deny from all
 Require all denied
 </IfModule>
 </Files>
-
-<IfModule mod_alias.c>
-RedirectMatch 301 ^/$ https://sigil.balcaodeempresas.com.br
-</IfModule>
