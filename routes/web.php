@@ -2,9 +2,11 @@
 
 use App\Http\Middleware\EnsureCityHallIsConfigured;
 use App\Livewire\BiddingModes;
+use App\Livewire\Biddings;
 use App\Livewire\BiddingSteps;
 use App\Livewire\CityHalls;
 use App\Livewire\Dashboard;
+use App\Livewire\Professionals;
 use App\Livewire\Secretaries;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,9 @@ Route::middleware([
 
     Route::middleware(EnsureCityHallIsConfigured::class)->group(function () {
         Route::get('/secretarias', Secretaries\Index::class)->name('secretaries.index');
+        Route::get('/profissionais', Professionals\Index::class)->name('professionals.index');
+        Route::get('/licitacoes', Biddings\Index::class)->name('biddings.index');
+        Route::get('/licitacoes/{bidding}', Biddings\Show::class)->name('biddings.show');
         Route::get('/modalidades', BiddingModes\Index::class)->name('bidding-modes.index');
         Route::get('/etapas', BiddingSteps\Index::class)->name('bidding-steps.index');
     });
