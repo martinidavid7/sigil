@@ -19,7 +19,6 @@
                         <th>Prazo</th>
                         <th>Compras e serviços</th>
                         <th>Obras e engenharia</th>
-                        <th class="text-center">Etapas</th>
                         <th class="text-center">Situação</th>
                         <th class="text-right">Ações</th>
                     </tr>
@@ -31,7 +30,6 @@
                             <td class="align-middle text-nowrap">{{ $mode->deadline ?? '—' }}</td>
                             <td class="align-middle">{{ Money::range($mode->purchase_services_minimum_value, $mode->purchase_services_maximum_value) }}</td>
                             <td class="align-middle">{{ Money::range($mode->construction_engineering_minimum_value, $mode->construction_engineering_maximum_value) }}</td>
-                            <td class="align-middle text-center">{{ $mode->steps_count }}</td>
                             <td class="align-middle text-center"><x-sigil.status-badge :enabled="$mode->enabled" /></td>
                             <td class="align-middle text-right text-nowrap">
                                 <button type="button" class="btn btn-sm btn-outline-primary"
@@ -53,7 +51,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">Nenhuma modalidade cadastrada.</td>
+                            <td colspan="6" class="text-center text-muted py-5">Nenhuma modalidade cadastrada.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -84,27 +82,6 @@
                         @endforeach
                     </div>
                 @endforeach
-
-                <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
-                    <h6 class="font-weight-bold text-primary mb-0">Etapas do processo</h6>
-                    <small class="text-muted">{{ count($form->steps) }} de {{ $this->availableSteps->count() }} selecionadas</small>
-                </div>
-                <div class="row">
-                    @foreach ($this->availableSteps as $step)
-                        <div class="col-md-6" wire:key="mode-step-{{ $step->id }}">
-                            <div class="custom-control custom-checkbox mb-1">
-                                <input type="checkbox" class="custom-control-input" id="mode-step-{{ $step->id }}"
-                                    value="{{ $step->id }}" wire:model.live="form.steps">
-                                <label class="custom-control-label" for="mode-step-{{ $step->id }}">
-                                    {{ $loop->iteration }}. {{ $step->name }}
-                                </label>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-                @error('form.steps.*')
-                    <div class="text-danger small mt-1">{{ $message }}</div>
-                @enderror
 
                 <div class="custom-control custom-switch mt-3">
                     <input type="checkbox" class="custom-control-input" id="mode-enabled" wire:model="form.enabled">
