@@ -92,6 +92,13 @@
                         <span>Etapas</span>
                     </a>
                 </li>
+
+                <li class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('reports.index') }}">
+                        <i class="fas fa-fw fa-file-pdf"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </li>
             @endif
 
             <hr class="sidebar-divider d-none d-md-block">
