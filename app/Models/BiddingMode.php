@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\BiddingType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BiddingMode extends Model
 {
@@ -33,14 +34,27 @@ class BiddingMode extends Model
         ];
     }
 
-    public function steps(): BelongsToMany
+    public function biddings(): HasMany
     {
-        return $this->belongsToMany(BiddingStep::class, 'bidding_mode_step')
-            ->orderBy('position');
+        return $this->hasMany(Bidding::class);
     }
 
     public function scopeEnabled(Builder $query): void
     {
         $query->where('enabled', true);
+    }
+
+    /**
+     * Modalidades cuja faixa de valor do tipo informado contém o valor.
+     * Modalidades sem faixa definida (pregões) ficam de fora.
+     */
+    public function scopeForValue(Builder $query, BiddingType $type, string|float $value): void
+    {
+        $min = $type->minimumColumn();
+        $max = $type->maximumColumn();
+
+        $query->where(fn ($query) => $query->whereNotNull($min)->orWhereNotNull($max))
+            ->where(fn ($query) => $query->whereNull($min)->orWhere($min, '<=', $value))
+            ->where(fn ($query) => $query->whereNull($max)->orWhere($max, '>=', $value));
     }
 }

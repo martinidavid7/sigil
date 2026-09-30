@@ -4,26 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Secretary extends Model
+class Professional extends Model
 {
-    /** @use HasFactory<\Database\Factories\SecretaryFactory> */
+    /** @use HasFactory<\Database\Factories\ProfessionalFactory> */
     use HasFactory;
 
     protected $fillable = [
+        'secretary_id',
         'name',
-        'responsible_name',
-        'phone',
-        'address',
-        'number',
-        'neighborhood',
-        'zip_code',
+        'role',
     ];
 
-    public function professionals(): HasMany
+    public function secretary(): BelongsTo
     {
-        return $this->hasMany(Professional::class);
+        return $this->belongsTo(Secretary::class);
     }
 
     public function stages(): HasMany
