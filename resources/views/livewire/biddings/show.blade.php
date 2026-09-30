@@ -13,6 +13,9 @@
             <a href="{{ route('biddings.index') }}" class="btn btn-light shadow-sm">
                 <i class="fas fa-arrow-left fa-sm mr-1"></i> Voltar
             </a>
+            <a href="{{ route('reports.bidding', $bidding) }}" target="_blank" class="btn btn-outline-secondary shadow-sm">
+                <i class="fas fa-file-pdf fa-sm mr-1"></i> PDF
+            </a>
             <button type="button" class="btn btn-outline-primary shadow-sm" wire:click="edit">
                 <i class="fas fa-pen fa-sm mr-1"></i> Editar
             </button>
