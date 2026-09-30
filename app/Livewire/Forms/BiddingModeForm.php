@@ -5,7 +5,6 @@ namespace App\Livewire\Forms;
 use App\Models\BiddingMode;
 use App\Support\Money;
 use Closure;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -36,9 +35,6 @@ class BiddingModeForm extends Form
 
     public bool $enabled = true;
 
-    /** @var array<int, string> */
-    public array $steps = [];
-
     protected function rules(): array
     {
         $money = ['nullable', 'regex:'.Money::PATTERN];
@@ -47,8 +43,6 @@ class BiddingModeForm extends Form
             'name' => ['required', 'string', 'max:120', Rule::unique('bidding_modes')->ignore($this->mode)],
             'deadline' => ['nullable', 'string', 'max:50'],
             'enabled' => ['boolean'],
-            'steps' => ['array'],
-            'steps.*' => ['integer', Rule::exists('bidding_steps', 'id')],
         ];
 
         foreach (self::RANGES as $min => $max) {
@@ -68,7 +62,6 @@ class BiddingModeForm extends Form
             'purchase_services_maximum_value' => 'valor máximo',
             'construction_engineering_minimum_value' => 'valor mínimo',
             'construction_engineering_maximum_value' => 'valor máximo',
-            'steps.*' => 'etapa',
         ];
     }
 
@@ -78,7 +71,6 @@ class BiddingModeForm extends Form
         $this->name = $mode->name;
         $this->deadline = (string) $mode->deadline;
         $this->enabled = $mode->enabled;
-        $this->steps = $mode->steps->pluck('id')->map(fn ($id) => (string) $id)->all();
 
         foreach (self::RANGES as $min => $max) {
             $this->{$min} = Money::format($mode->{$min});
@@ -97,13 +89,10 @@ class BiddingModeForm extends Form
 
         $data['deadline'] = $data['deadline'] ?: null;
 
-        return DB::transaction(function () use ($data) {
-            $this->mode ??= new BiddingMode;
-            $this->mode->fill($data)->save();
-            $this->mode->steps()->sync($data['steps']);
+        $this->mode ??= new BiddingMode;
+        $this->mode->fill($data)->save();
 
-            return $this->mode;
-        });
+        return $this->mode;
     }
 
     /**

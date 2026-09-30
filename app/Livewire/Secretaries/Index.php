@@ -52,6 +52,13 @@ class Index extends Component
 
     public function delete(Secretary $secretary): void
     {
+        if ($secretary->stages()->exists()) {
+            $this->notify("{$secretary->name} já responde por etapas de licitações e não pode ser excluída.", 'error');
+
+            return;
+        }
+
+        // Os profissionais da secretaria são excluídos junto (cascade).
         $secretary->delete();
 
         $this->notify("{$secretary->name} foi excluída.");
